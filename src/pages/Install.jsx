@@ -304,8 +304,11 @@ export default function InstallPage() {
         `https://api.github.com/repos/${repoInfo.owner}/${repoInfo.repo}/contents/package.json`
       )
 
-      // 解析 base64 内容
-      const content = atob(packageJson.content.replace(/\n/g, ''))
+      // 解析 base64 内容（支持 UTF-8）
+      const base64 = packageJson.content.replace(/\n/g, '')
+      const content = new TextDecoder().decode(
+        Uint8Array.from(atob(base64), c => c.charCodeAt(0))
+      )
       const pkg = JSON.parse(content)
 
       // 验证 jsos 配置
