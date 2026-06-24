@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShoppingBag, Download, Star, ExternalLink, RefreshCw, Clock, Check } from 'lucide-react'
+import { ShoppingBag, Download, Star, ExternalLink, RefreshCw, Clock, Check, Puzzle } from 'lucide-react'
 import { useLocale } from '@/i18n'
 import { resolveLocalized } from '@/lib/localize'
 import { fetchStore, filterApps } from '@/lib/storeApi'
@@ -14,10 +14,14 @@ import { Tooltip, TooltipTrigger, TooltipPopup } from '@/ui/tooltip'
 
 const CATEGORIES = [
   { id: 'all', labelEn: 'All', labelZh: '全部' },
-  { id: 'tools', labelEn: 'Tools', labelZh: '工具' },
+  { id: 'cli', labelEn: 'CLI Tools', labelZh: '命令行工具' },
+  { id: 'gui', labelEn: 'GUI Apps', labelZh: '图形界面' },
   { id: 'games', labelEn: 'Games', labelZh: '游戏' },
-  { id: 'utilities', labelEn: 'Utilities', labelZh: '实用' },
   { id: 'education', labelEn: 'Education', labelZh: '教育' },
+  { id: 'productivity', labelEn: 'Productivity', labelZh: '效率' },
+  { id: 'media', labelEn: 'Media', labelZh: '媒体' },
+  { id: 'devtools', labelEn: 'Dev Tools', labelZh: '开发工具' },
+  { id: 'utilities', labelEn: 'Utilities', labelZh: '实用工具' },
   { id: 'other', labelEn: 'Other', labelZh: '其他' },
 ]
 
@@ -117,6 +121,12 @@ function AppCard({ app, locale, onInstall, t, installedMap }) {
         </div>
         {app.tags && app.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
+            {app.widgets && app.widgets.length > 0 && (
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                <Puzzle size={9} className="mr-0.5" />
+                {app.widgets.length}
+              </Badge>
+            )}
             {app.tags.slice(0, 4).map(tag => (
               <Badge key={tag} variant="secondary" className="text-[10px] px-1.5 py-0">
                 {tag}
