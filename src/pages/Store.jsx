@@ -27,7 +27,7 @@ const SORT_OPTIONS = [
   { id: 'name', labelEn: 'Name', labelZh: '名称' },
 ]
 
-function AppCard({ app, locale, onInstall }) {
+function AppCard({ app, locale, onInstall, t }) {
   const name = resolveLocalized(app.name, locale) || app.id
   const desc = resolveLocalized(app.description, locale)
 
@@ -100,7 +100,7 @@ function AppCard({ app, locale, onInstall }) {
       <div className="flex flex-col gap-1.5 shrink-0">
         <Button size="sm" onClick={() => onInstall(app)}>
           <Download size={12} />
-          Install
+          {t('install.actionInstall')}
         </Button>
         {app.repository?.url && (
           <a
@@ -321,6 +321,7 @@ export default function StorePage() {
                   app={app}
                   locale={locale}
                   onInstall={handleInstall}
+                  t={t}
                 />
               ))}
             </div>

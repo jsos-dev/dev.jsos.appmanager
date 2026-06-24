@@ -50,9 +50,9 @@ function AppContent() {
   }, [])
 
   const navItems = [
-    { id: 'apps', label: t('nav.apps'), icon: LayoutGrid },
-    { id: 'install', label: t('nav.install'), icon: Download },
-    { id: 'store', label: t('nav.store'), icon: ShoppingBag },
+  { id: 'apps', label: t('nav.apps'), icon: LayoutGrid },
+  { id: 'store', label: t('nav.store'), icon: ShoppingBag },
+  { id: 'install', label: t('nav.install'), icon: Download },
   ]
 
   const isActive = (id) => {
