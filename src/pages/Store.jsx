@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShoppingBag, Search, Download, Star, ExternalLink, RefreshCw, Loader2, Tag, Clock } from 'lucide-react'
+import { ShoppingBag, Download, Star, ExternalLink, RefreshCw, Clock } from 'lucide-react'
 import { useLocale } from '@/i18n'
 import { resolveLocalized } from '@/lib/localize'
 import { fetchStore, filterApps } from '@/lib/storeApi'
@@ -10,6 +10,7 @@ import { Tabs, TabsList, TabsTab } from '@/ui/tabs'
 import { Badge } from '@/ui/badge'
 import { ScrollArea } from '@/ui/scroll-area'
 import { Select, SelectTrigger, SelectValue, SelectPopup, SelectItem } from '@/ui/select'
+import { Tooltip, TooltipTrigger, TooltipPopup } from '@/ui/tooltip'
 
 const CATEGORIES = [
   { id: 'all', labelEn: 'All', labelZh: '全部' },
@@ -68,7 +69,7 @@ function AppCard({ app, locale, onInstall }) {
               {app.author.name}
             </span>
           )}
-          {app.stars > 0 && (
+          {app.stars != null && (
             <span className="flex items-center gap-1">
               <Star size={11} />
               {app.stars}
@@ -147,6 +148,19 @@ export default function StorePage() {
     setLoading(true)
     setError(null)
     try {
+      const data = await fetchStore()
+      setStoreData(data)
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  const refreshStore = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
       const data = await fetchStore({ force: true })
       setStoreData(data)
     } catch (e) {
@@ -184,42 +198,71 @@ export default function StorePage() {
     }
   }, [navigate])
 
+  const getSortLabel = () => {
+    const opt = SORT_OPTIONS.find(o => o.id === sort)
+    if (!opt) return ''
+    return locale === 'zh-CN' ? opt.labelZh : opt.labelEn
+  }
+
   return (
     <div className="p-6 max-w-3xl">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold">{t('store.title')}</h2>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {storeData && (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-muted-foreground mr-1">
               {storeData.appCount} apps
             </span>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={loadStore}
-            disabled={loading}
-            title={t('store.refresh')}
-          >
-            <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={refreshStore}
+                  disabled={loading}
+                />
+              }
+            >
+              <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+            </TooltipTrigger>
+            <TooltipPopup>{t('store.refresh')}</TooltipPopup>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  asChild
+                />
+              }
+            >
+              <a
+                href="https://github.com/jsos-dev/jsos-app-store/issues/new?template=register-app.yml"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ExternalLink size={14} />
+              </a>
+            </TooltipTrigger>
+            <TooltipPopup>{t('store.submitApp')}</TooltipPopup>
+          </Tooltip>
         </div>
       </div>
 
       {/* Search and sort */}
       <div className="flex gap-2 mb-4">
-        <div className="relative flex-1">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-          <Input
-            placeholder={t('store.search')}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="pl-9"
-          />
-        </div>
+        <Input
+          placeholder={t('store.search')}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="flex-1"
+        />
         <Select value={sort} onValueChange={setSort}>
           <SelectTrigger className="w-32">
-            <SelectValue placeholder={locale === 'zh-CN' ? '排序' : 'Sort'} />
+            <SelectValue>{getSortLabel()}</SelectValue>
           </SelectTrigger>
           <SelectPopup>
             {SORT_OPTIONS.map(opt => (
@@ -255,7 +298,7 @@ export default function StorePage() {
         {error && (
           <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
             <p className="text-sm mb-3">{t('store.loadFailed')}</p>
-            <Button variant="outline" size="sm" onClick={loadStore}>
+            <Button variant="outline" size="sm" onClick={refreshStore}>
               <RefreshCw size={14} />
               {t('store.retry')}
             </Button>
@@ -283,21 +326,6 @@ export default function StorePage() {
             </div>
           </ScrollArea>
         )}
-      </div>
-
-      {/* Submit app link */}
-      <div className="mt-8 pt-4 border-t border-border text-center">
-        <p className="text-xs text-muted-foreground">
-          {t('store.submitHint')}{' '}
-          <a
-            href="https://github.com/jsos-dev/jsos-app-store/issues/new?template=register-app.yml"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline"
-          >
-            {t('store.submitLink')}
-          </a>
-        </p>
       </div>
     </div>
   )
