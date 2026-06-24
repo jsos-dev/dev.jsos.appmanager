@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState, useCallback, useRef, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { Loader2, UploadCloud, Check, AlertTriangle, FileArchive, GitBranch, Link, Download, Globe, Tag, Package } from 'lucide-react'
 import { useLocale } from '@/i18n'
 import { resolveLocalized } from '@/lib/localize'
@@ -14,16 +14,32 @@ const ACTION_VARIANTS = {
   overwrite: 'secondary',
 }
 
+// Convert GitHub URL to raw.githubusercontent.com URL to avoid 302 redirect
+function toRawUrl(url) {
+  if (!url) return url
+  const match = url.match(/^https?:\/\/github\.com\/([^/]+)\/([^/]+)\/raw\/([^/]+)\/(.+)$/)
+  if (match) {
+    return `https://raw.githubusercontent.com/${match[1]}/${match[2]}/${match[3]}/${match[4]}`
+  }
+  return url
+}
+
 export default function InstallPage() {
   const { t, locale } = useLocale()
   const navigate = useNavigate()
+  const location = useLocation()
   const fileInputRef = useRef(null)
   const fileRef = useRef(null)
+
+  // Auto-fill GitHub URL from Store page
+  const prefilledGithubUrl = location.state?.githubUrl || ''
+  const prefilledTab = location.state?.tab || 'local'
 
   const [status, setStatus] = useState('idle') // idle | parsing | ready | installing
   const [parseResult, setParseResult] = useState(null)
   const [dragOver, setDragOver] = useState(false)
   const [installed, setInstalled] = useState(false)
+  const [activeTab, setActiveTab] = useState(prefilledTab)
 
   // 远程 URL 安装相关状态
   const [remoteUrl, setRemoteUrl] = useState('')
@@ -44,6 +60,19 @@ export default function InstallPage() {
   const [githubInstalled, setGithubInstalled] = useState(false)
   const [githubFile, setGithubFile] = useState(null)
   const [githubDownloadProgress, setGithubDownloadProgress] = useState(0)
+
+  // Auto-fill and auto-fetch GitHub URL from Store page
+  const autoFetchRef = useRef(false)
+  useEffect(() => {
+    if (prefilledGithubUrl && !autoFetchRef.current) {
+      autoFetchRef.current = true
+      setGithubUrl(prefilledGithubUrl)
+      // Trigger auto-fetch after state is set
+      setTimeout(() => {
+        fetchGithubInfoWithURL(prefilledGithubUrl)
+      }, 0)
+    }
+  }, [prefilledGithubUrl])
 
   const parseFile = useCallback(async (file) => {
     setStatus('parsing')
@@ -269,8 +298,8 @@ export default function InstallPage() {
   }, [t])
 
   // 步骤1：获取仓库信息和 package.json
-  const fetchGithubInfo = useCallback(async () => {
-    if (!githubUrl.trim()) {
+  const fetchGithubInfoInternal = useCallback(async (url) => {
+    if (!url.trim()) {
       await window.JSOS?.toast({
         title: t('install.githubUrlRequired'),
         description: t('install.githubUrlRequiredDesc'),
@@ -279,7 +308,7 @@ export default function InstallPage() {
       return
     }
 
-    const repoInfo = parseGithubUrl(githubUrl)
+    const repoInfo = parseGithubUrl(url)
     if (!repoInfo) {
       await window.JSOS?.toast({
         title: t('install.githubUrlInvalid'),
@@ -318,6 +347,7 @@ export default function InstallPage() {
 
       setGithubManifest({
         ...pkg.jsos,
+        icon: toRawUrl(pkg.jsos.icon),
         version: pkg.version || '1.0.0',
         _repoInfo: repoInfo,
       })
@@ -341,7 +371,15 @@ export default function InstallPage() {
         type: 'error',
       })
     }
-  }, [githubUrl, parseGithubUrl, githubApiFetch, t])
+  }, [githubApiFetch, parseGithubUrl, t])
+
+  const fetchGithubInfo = useCallback(() => {
+    return fetchGithubInfoInternal(githubUrl)
+  }, [githubUrl, fetchGithubInfoInternal])
+
+  const fetchGithubInfoWithURL = useCallback((url) => {
+    return fetchGithubInfoInternal(url)
+  }, [fetchGithubInfoInternal])
 
   // 步骤2：选择版本并下载
   const fetchGithubRelease = useCallback(async (release) => {
@@ -624,7 +662,7 @@ export default function InstallPage() {
     <div className="p-6 max-w-2xl">
       <h2 className="text-lg font-semibold mb-6">{t('install.title')}</h2>
 
-      <Tabs defaultValue="local">
+      <Tabs value={activeTab} onChange={setActiveTab}>
         <TabsList>
           <TabsTab value="local">{t('install.tabLocal')}</TabsTab>
           <TabsTab value="github">{t('install.tabGithub')}</TabsTab>
