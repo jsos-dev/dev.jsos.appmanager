@@ -107,6 +107,8 @@ export const en = {
   'store.loadFailed': 'Failed to load store data',
   'store.retry': 'Retry',
   'store.refresh': 'Refresh',
+  'store.update': 'Update',
+  'store.installed': 'Installed',
   'store.submitApp': 'Submit App',
   'addWidget.title': 'Add Widget',
   'addWidget.hint': 'Select a widget to add to the desktop',

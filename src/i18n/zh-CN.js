@@ -107,6 +107,8 @@ export const zhCN = {
   'store.loadFailed': '加载商店数据失败',
   'store.retry': '重试',
   'store.refresh': '刷新',
+  'store.update': '更新',
+  'store.installed': '已安装',
   'store.submitApp': '提交应用',
   'addWidget.title': '添加小组件',
   'addWidget.hint': '选择一个小组件添加到桌面',

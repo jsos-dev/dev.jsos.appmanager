@@ -19,6 +19,7 @@ function AppContent() {
   const hideNav = searchParams.has('hideNav')
   const [collapsed, setCollapsed] = useState(true)
   const [appCount, setAppCount] = useState(0)
+  const [storeCount, setStoreCount] = useState(0)
 
   useEffect(() => {
     function apply(effective) {
@@ -46,6 +47,22 @@ function AppContent() {
     }
     loadCount()
     const id = setInterval(loadCount, 30000)
+    return () => clearInterval(id)
+  }, [])
+
+  useEffect(() => {
+    const loadStoreCount = async () => {
+      if (document.visibilityState !== 'visible') return
+      try {
+        const resp = await fetch('https://raw.githubusercontent.com/jsos-dev/jsos-app-store/main/store.json')
+        if (resp.ok) {
+          const data = await resp.json()
+          setStoreCount(data.appCount || 0)
+        }
+      } catch {}
+    }
+    loadStoreCount()
+    const id = setInterval(loadStoreCount, 300000)
     return () => clearInterval(id)
   }, [])
 
@@ -105,9 +122,9 @@ function AppContent() {
                 {!collapsed && (
                   <>
                     <span className="flex-1 text-left">{t(`nav.${item.id}`)}</span>
-                    {item.id === 'apps' && appCount > 0 && (
+                    {((item.id === 'apps' && appCount > 0) || (item.id === 'store' && storeCount > 0)) && (
                       <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full leading-none font-medium">
-                        {appCount}
+                        {item.id === 'apps' ? appCount : storeCount}
                       </span>
                     )}
                   </>

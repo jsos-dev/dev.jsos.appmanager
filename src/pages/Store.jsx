@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShoppingBag, Download, Star, ExternalLink, RefreshCw, Clock } from 'lucide-react'
+import { ShoppingBag, Download, Star, ExternalLink, RefreshCw, Clock, Check } from 'lucide-react'
 import { useLocale } from '@/i18n'
 import { resolveLocalized } from '@/lib/localize'
 import { fetchStore, filterApps } from '@/lib/storeApi'
@@ -27,9 +27,37 @@ const SORT_OPTIONS = [
   { id: 'name', labelEn: 'Name', labelZh: '名称' },
 ]
 
-function AppCard({ app, locale, onInstall, t }) {
+function compareVersions(a, b) {
+  const normalize = v => v?.replace(/^v/, '') || '0.0.0'
+  const pa = normalize(a).split('.').map(Number)
+  const pb = normalize(b).split('.').map(Number)
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const na = pa[i] || 0
+    const nb = pb[i] || 0
+    if (na > nb) return 1
+    if (na < nb) return -1
+  }
+  return 0
+}
+
+function AppCard({ app, locale, onInstall, t, installedMap }) {
   const name = resolveLocalized(app.name, locale) || app.id
   const desc = resolveLocalized(app.description, locale)
+  const installed = installedMap.get(app.id)
+  const isInstalled = !!installed
+  const hasUpdate = isInstalled && compareVersions(app.version, installed.version) > 0
+
+  const getButtonConfig = () => {
+    if (!isInstalled) {
+      return { text: t('install.actionInstall'), disabled: false, variant: 'default' }
+    }
+    if (hasUpdate) {
+      return { text: t('store.update'), disabled: false, variant: 'default' }
+    }
+    return { text: t('store.installed'), disabled: true, variant: 'secondary' }
+  }
+
+  const { text, disabled, variant } = getButtonConfig()
 
   return (
     <div className="flex items-start gap-4 p-4 rounded-lg border border-border bg-card hover:border-muted-foreground/30 transition-colors">
@@ -98,9 +126,18 @@ function AppCard({ app, locale, onInstall, t }) {
         )}
       </div>
       <div className="flex flex-col gap-1.5 shrink-0">
-        <Button size="sm" onClick={() => onInstall(app)}>
-          <Download size={12} />
-          {t('install.actionInstall')}
+        <Button
+          size="sm"
+          variant={variant}
+          onClick={() => onInstall(app)}
+          disabled={disabled}
+        >
+          {isInstalled && !hasUpdate ? (
+            <Check size={12} />
+          ) : (
+            <Download size={12} />
+          )}
+          {text}
         </Button>
         {app.repository?.url && (
           <a
@@ -142,7 +179,7 @@ export default function StorePage() {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('all')
   const [sort, setSort] = useState('stars')
-  const [installedIds, setInstalledIds] = useState(new Set())
+  const [installedMap, setInstalledMap] = useState(new Map())
 
   const loadStore = useCallback(async () => {
     setLoading(true)
@@ -178,7 +215,8 @@ export default function StorePage() {
     async function checkInstalled() {
       const apps = await window.JSOS?.getApps()
       if (apps) {
-        setInstalledIds(new Set(apps.map(a => a.id)))
+        const map = new Map(apps.map(a => [a.id, { version: a.version }]))
+        setInstalledMap(map)
       }
     }
     checkInstalled()
@@ -322,6 +360,7 @@ export default function StorePage() {
                   locale={locale}
                   onInstall={handleInstall}
                   t={t}
+                  installedMap={installedMap}
                 />
               ))}
             </div>
