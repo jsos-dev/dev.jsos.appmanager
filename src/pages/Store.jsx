@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShoppingBag, Download, Star, ExternalLink, RefreshCw, Clock, Check, Puzzle } from 'lucide-react'
+import { ShoppingBag, Download, Star, ExternalLink, RefreshCw, Clock, Check, Puzzle, Plus } from 'lucide-react'
 import { useLocale } from '@/i18n'
 import { resolveLocalized } from '@/lib/localize'
 import { fetchStore, filterApps } from '@/lib/storeApi'
@@ -8,7 +8,6 @@ import { Button } from '@/ui/button'
 import { Input } from '@/ui/input'
 import { Tabs, TabsList, TabsTab } from '@/ui/tabs'
 import { Badge } from '@/ui/badge'
-import { ScrollArea } from '@/ui/scroll-area'
 import { Select, SelectTrigger, SelectValue, SelectPopup, SelectItem } from '@/ui/select'
 import { Tooltip, TooltipTrigger, TooltipPopup } from '@/ui/tooltip'
 
@@ -108,13 +107,13 @@ function AppCard({ app, locale, onInstall, t, installedMap }) {
             </span>
           )}
           {app.updatedAt && (
-            <span className="flex items-center gap-1">
+            <span className="hidden sm:flex items-center gap-1">
               <Clock size={11} />
               {new Date(app.updatedAt).toLocaleDateString()}
             </span>
           )}
           {app.license && (
-            <span className="flex items-center gap-1">
+            <span className="hidden sm:flex items-center gap-1">
               {app.license}
             </span>
           )}
@@ -253,7 +252,7 @@ export default function StorePage() {
   }
 
   return (
-    <div className="p-6 max-w-3xl">
+    <div className="p-4 sm:p-6 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold">{t('store.title')}</h2>
         <div className="flex items-center gap-1">
@@ -277,26 +276,20 @@ export default function StorePage() {
             </TooltipTrigger>
             <TooltipPopup>{t('store.refresh')}</TooltipPopup>
           </Tooltip>
-          <Tooltip>
-            <TooltipTrigger
-              render={
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  asChild
-                />
-              }
-            >
+          <Button
+            variant="outline"
+            size="sm"
+            render={
               <a
                 href="https://github.com/jsos-dev/jsos-app-store/issues/new?template=register-app.yml"
                 target="_blank"
                 rel="noopener noreferrer"
-              >
-                <ExternalLink size={14} />
-              </a>
-            </TooltipTrigger>
-            <TooltipPopup>{t('store.submitApp')}</TooltipPopup>
-          </Tooltip>
+              />
+            }
+          >
+            <Plus size={14} />
+            {t('store.submitApp')}
+          </Button>
         </div>
       </div>
 
@@ -324,7 +317,7 @@ export default function StorePage() {
 
       {/* Category tabs */}
       <Tabs value={category} onValueChange={setCategory}>
-        <TabsList>
+        <TabsList className="w-full overflow-x-auto flex-nowrap justify-start sm:justify-center [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {CATEGORIES.map(cat => (
             <TabsTab key={cat.id} value={cat.id}>
               {locale === 'zh-CN' ? cat.labelZh : cat.labelEn}
@@ -361,7 +354,7 @@ export default function StorePage() {
         )}
 
         {!loading && !error && filteredApps.length > 0 && (
-          <div className="space-y-3 pb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 pb-8">
             {filteredApps.map(app => (
               <AppCard
                 key={app.id}
