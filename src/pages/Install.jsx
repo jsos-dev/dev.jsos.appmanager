@@ -662,7 +662,7 @@ export default function InstallPage() {
     <div className="p-6 max-w-2xl">
       <h2 className="text-lg font-semibold mb-6">{t('install.title')}</h2>
 
-      <Tabs value={activeTab} onChange={setActiveTab}>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTab value="local">{t('install.tabLocal')}</TabsTab>
           <TabsTab value="github">{t('install.tabGithub')}</TabsTab>

@@ -323,7 +323,7 @@ export default function StorePage() {
       </div>
 
       {/* Category tabs */}
-      <Tabs value={category} onChange={setCategory}>
+      <Tabs value={category} onValueChange={setCategory}>
         <TabsList>
           {CATEGORIES.map(cat => (
             <TabsTab key={cat.id} value={cat.id}>
@@ -361,20 +361,18 @@ export default function StorePage() {
         )}
 
         {!loading && !error && filteredApps.length > 0 && (
-          <ScrollArea className="h-[calc(100vh-280px)]">
-            <div className="space-y-3 pr-4">
-              {filteredApps.map(app => (
-                <AppCard
-                  key={app.id}
-                  app={app}
-                  locale={locale}
-                  onInstall={handleInstall}
-                  t={t}
-                  installedMap={installedMap}
-                />
-              ))}
-            </div>
-          </ScrollArea>
+          <div className="space-y-3 pb-8">
+            {filteredApps.map(app => (
+              <AppCard
+                key={app.id}
+                app={app}
+                locale={locale}
+                onInstall={handleInstall}
+                t={t}
+                installedMap={installedMap}
+              />
+            ))}
+          </div>
         )}
       </div>
     </div>
