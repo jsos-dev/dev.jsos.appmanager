@@ -10,7 +10,7 @@ export async function fetchStore({ force = false } = {}) {
     return cache
   }
 
-  const resp = await fetch(STORE_RAW_URL)
+  const resp = await fetch(STORE_RAW_URL, { cache: 'no-store' })
   if (!resp.ok) {
     throw new Error(`Failed to fetch store data: ${resp.status}`)
   }
