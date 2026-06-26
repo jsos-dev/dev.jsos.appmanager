@@ -177,7 +177,7 @@ export default function AppDetailPage() {
       </div>
 
       <div className="flex items-center gap-2 flex-wrap">
-        {info.appDir && (
+        {info.appDir && info.sourceDirExists && (
           <Button
             variant="outline"
             size="sm"
@@ -187,7 +187,7 @@ export default function AppDetailPage() {
             {t('detail.sourceDir')}
           </Button>
         )}
-        {info.dataDir && (
+        {info.dataDir && info.dataDirExists && (
           <Button
             variant="outline"
             size="sm"
