@@ -39,6 +39,8 @@ export const en = {
   'detail.bugs': 'Issues',
   'detail.cancel': 'Cancel',
   'detail.confirm': 'Confirm Uninstall',
+  'detail.sourceDir': 'Source Directory',
+  'detail.dataDir': 'Data Directory',
   'install.title': 'Install App',
   'install.dropHint': 'Drag app package here',
   'install.dropActive': 'Release to add app',

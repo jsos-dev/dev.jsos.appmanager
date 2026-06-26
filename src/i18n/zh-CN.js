@@ -39,6 +39,8 @@ export const zhCN = {
   'detail.bugs': 'Issues',
   'detail.cancel': '取消',
   'detail.confirm': '确认卸载',
+  'detail.sourceDir': '源码目录',
+  'detail.dataDir': '数据目录',
   'install.title': '安装应用',
   'install.dropHint': '拖拽应用包到此处',
   'install.dropActive': '释放以添加应用',

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useId } from 'react'
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom'
-import { Monitor, Terminal, Hash, Circle, Clock, BadgeCheck, Trash2, ExternalLink } from 'lucide-react'
+import { Monitor, Terminal, Hash, Circle, Clock, BadgeCheck, Trash2, ExternalLink, FolderOpen } from 'lucide-react'
 import { useLocale } from '@/i18n'
 import { Button } from '@/ui/button'
 import { Checkbox } from '@/ui/checkbox'
@@ -176,7 +176,27 @@ export default function AppDetailPage() {
         )}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
+        {info.appDir && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.JSOS?.openApp?.('dev.jsos.filemanager', { route: info.appDir })}
+          >
+            <FolderOpen size={14} />
+            {t('detail.sourceDir')}
+          </Button>
+        )}
+        {info.dataDir && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.JSOS?.openApp?.('dev.jsos.filemanager', { route: info.dataDir })}
+          >
+            <FolderOpen size={14} />
+            {t('detail.dataDir')}
+          </Button>
+        )}
         {!info.isSystem && (
           <Button
             variant="ghost"
