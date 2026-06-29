@@ -71,7 +71,7 @@ export default function AddWidgetPage() {
           type: 'success',
           timeout: 3000,
         })
-        await window.JSOS?.closeApp?.('dev.jsos.appmanager')
+        await window.JSOS?.closeAppWindow?.()
       } else {
         await window.JSOS?.toast?.({
           title: t('addWidget.failed'),
